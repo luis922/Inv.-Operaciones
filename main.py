@@ -1,9 +1,10 @@
 # Luis Romero paralelo 2
-# Cristian paralelo 3
+# Cristian Montes paralelo 3
 import datetime
 import random
 import math
 from tabulate import tabulate
+
 
 def quitar_salto_linea():  # Quita salto de linea a cada string obtenido del archivo de instancia.
     for i in range(len(lineas_instancia)):
@@ -32,7 +33,7 @@ def agregar_ubicacion_tiendas():  # Asocia un valor a la indexación original de
     return lista
 
 
-#-----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 # Swap two values randomly in list.URL https://stackoverflow.com/questions/47724017/swap-two-values-randomly-in-list
 # Algoritmo basado en la respuesta del usuario juanpa.arrivillaga
 def swap(lista):                  # Cambia aleatoriamente dos elementos al interior de una lista
@@ -44,7 +45,7 @@ def swap(lista):                  # Cambia aleatoriamente dos elementos al inter
     lista[indice1] = dato2
     lista[indice2] = dato1
     return lista
-#-----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 
 
 def calcular_distancia(indice1, indice2, resultado):                   # Calcula la distancia entre dos tiendas
@@ -73,21 +74,23 @@ def encontrar_mejor_solucion():
     num_iteraciones = 0
     resultados = []
     solucion = len_tiendas_con_ubicacion.copy()
-    random.shuffle(solucion)  # Se genera una solución random
+    random.shuffle(solucion)  # Se genera una solución inicial random
     fo_solucion = calcular_funcion_objetivo(solucion)  # Se calcula la función objetivo de la solución actual
     resultados.append([num_iteraciones, round(fo_solucion), round(temperatura, 3)])
-    print("Calculando.", end="")
+    #print("Calculando", end="")
+
     while temperatura > T_minima:
-        print(".", end="")
+        num_iteraciones += 1
+        '''   print(".", end="")
         if num_iteraciones % 100 == 0 and num_iteraciones >= 100:
             print()
-        num_iteraciones += 1
+            print(" " * 10, end="") '''
         nuevo_vecino = swap(solucion.copy())
         # Se genera una nueva solución al intercambiar dos elementos de la lista entre si
 
         fo_solucion = calcular_funcion_objetivo(solucion)
         fo_new_vecino = calcular_funcion_objetivo(nuevo_vecino)
-        #-------------------Criterio de metropolis---------------------------
+        # -------------------Criterio de metropolis---------------------------
         diferencia = fo_new_vecino - fo_solucion
         if diferencia < 0:
             solucion = nuevo_vecino.copy()
@@ -97,25 +100,44 @@ def encontrar_mejor_solucion():
             if random.random() < p:
                 solucion = nuevo_vecino.copy()
                 fo_solucion = fo_new_vecino
-        #---------------------------------------------------------------------
+        # ---------------------------------------------------------------------
 
         temperatura = temperatura * alfa  # Se disminuye la temperatura
 
         resultados.append([num_iteraciones, round(fo_solucion), round(temperatura, 3)])
-    print()
-    print(tabulate(resultados, headers=["Iteración", "Función Objetivo", "Temperatura actual"]))
+   # print()
+   # print(tabulate(resultados, headers=["Iteración", "Función Objetivo", "Temperatura actual"]))
+
     return solucion
 
 
+def mostrar_solucion(lista):
+    contador = 0
+    for ubicacion, valor in lista:
+        contador += 1
+        print(valor, " ", end="")
+        if contador == 40:
+            contador = 0
+            print()
+            print(" "*24, end="")
+
+'''
+Generación solución inicial: Aleatoria
+Operador de vecindario: Swap
+Criterio de aceptación: Criterio de metropolis
+Esquema de enfriamiento: Geométrico 
+Criterio de termino: Temperatura mínima
+'''
+
 # Main
 t_e_inicio = datetime.datetime.now()
-#-------------------------------------------Parámetros------------------------------------------------------------------
-archivo = "Instancias/QAP_sko100_04_n.txt"
-T_inicial = 10
+# ----------------------------------------------------------------------------------------------------------------------
+archivo = "Instancias/QAP_sko56_04_n.txt"
+T_inicial = 999
 alfa = 0.99
-T_minima = 0.1
-#-----------------------------------------------------------------------------------------------------------------------
-#---------------------------------Procesamiento de datos en archivo-----------------------------------------------------
+T_minima = 0.0001
+# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------Procesamiento de datos en archivo-----------------------------------------------------
 instancia = open(archivo, "r")                                   # Abre el archivo que contiene la instancia a resolver
 lineas_instancia = instancia.readlines()                         # Lista con todas las lineas del archivo
 quitar_salto_linea()
@@ -128,19 +150,21 @@ len_tiendas_con_ubicacion = agregar_ubicacion_tiendas()          # Contiene una 
 
 matriz_clientes = crear_matriz_clientes()                        # Matriz que contiene la cantidad de clientes que prefieren cierto par de tiendas
 instancia.close()                                                # Cierra el archivo que contiene la instancia a resolver
-#-----------------------------------------------------------------------------------------------------------------------
-#---------------------------------------Búsqueda de solución optima-----------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------Búsqueda de solución optima-----------------------------------------------------
 solucion_final = encontrar_mejor_solucion()
-#-----------------------------------------------------------------------------------------------------------------------
-#---------------------------------------Calculo tiempo de ejecución-----------------------------------------------------
+#so_minima = solucion_final.copy()
+# ----------------------------------------------------------------------------------------------------------------------
+# ---------------------------------------Calculo tiempo de ejecución----------------------------------------------------
 # How to get the execution time of code in milliseconds in Python.
 # URL: https://www.adamsmith.haus/python/answers/how-to-get-the-execution-time-of-code-in-milliseconds-in-python
 # t_e_inicio = datetime.datetime.now()                       # Almacena la hora de inicio de la ejecución
 t_e_final = datetime.datetime.now()                          # Almacena la hora de termino de la ejecución
 tiempo_ejecucion = (t_e_final - t_e_inicio).total_seconds()  # Almacena el tiempo de ejecución de la búsqueda en seg.
-#-----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 
-print("\nOrden final de tiendas: ", solucion_final)
-print("Funcion objetivo solucion:", calcular_funcion_objetivo(solucion_final))
+print("\nOrden final de tiendas: ", end="")
+mostrar_solucion(solucion_final)
 print()
-print(tiempo_ejecucion)
+print("Funcion objetivo solucion:", calcular_funcion_objetivo(solucion_final))
+print("Tiempo de ejecución: ", tiempo_ejecucion)
